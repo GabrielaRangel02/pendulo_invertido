@@ -6,20 +6,16 @@ const int trigPin = 11;
 const int echoPin = 12;
 const int servoPin = 9;
 
-// Deadzone
 float deadMin = 8.0;
 float deadMax = 9.0;
 
-// Rango real medido
-float distMin = 3.0;    // distancia mínima donde el servo está en 20°
-float distMax = 17.0;   // distancia máxima donde debe llegar a 120°
+float distMin = 3.0;  
+float distMax = 17.0; 
 
-// Límites del servo
-int servoDown = 20;     // ángulo mínimo
-int servoCenter = 75;   // deadzone
-int servoUp = 120;      // ángulo máximo
+int servoDown = 30;     // ángulo mínimo
+int servoCenter = 85;   // deadzone
+int servoUp = 130;      // ángulo máximo
 
-// Suavizado (para que no sea brusco)
 float suavizado = 0.15;
 
 float pos = servoCenter;
@@ -51,126 +47,22 @@ void loop() {
   float dist = getDistance();
   float targetAngle;
 
-  // ============================
-  //       LÓGICA SOLICITADA
-  // ============================
-
   if (dist <= distMin) {
-    // Muy cerca → servo abajo (20°)
     targetAngle = servoDown;
   }
   else if (dist > distMin && dist < deadMin) {
-    // Entre 3 cm y 8 cm → 20° → 75°
     targetAngle = map(dist, distMin, deadMin, servoDown, servoCenter);
   }
   else if (dist >= deadMin && dist <= deadMax) {
-    // Deadzone → 75° fijo
     targetAngle = servoCenter;
   }
   else {  
-    // dist > 9 → mapear 75° → 120°
     targetAngle = map(dist, deadMax, distMax, servoCenter, servoUp);
   }
 
-  // Límites seguros
   targetAngle = constrain(targetAngle, servoDown, servoUp);
-
-  // Suavización
   pos = pos + (targetAngle - pos) * suavizado;
-
   servo.write(pos);
-
-  // DEBUG
-  Serial.print("Distancia: ");
-  Serial.print(dist);
-  Serial.print(" cm | Angulo: ");
-  Serial.println(pos);
-
-  delay(15);
-}
-#include <Servo.h>
-
-Servo servo;
-
-const int trigPin = 11;
-const int echoPin = 12;
-const int servoPin = 9;
-
-// Deadzone
-float deadMin = 8.0;
-float deadMax = 9.0;
-
-// Rango real medido
-float distMin = 3.0;    // distancia mínima donde el servo está en 20°
-float distMax = 17.0;   // distancia máxima donde debe llegar a 120°
-
-// Límites del servo
-int servoDown = 20;     // ángulo mínimo
-int servoCenter = 75;   // deadzone
-int servoUp = 120;      // ángulo máximo
-
-// Suavizado (para que no sea brusco)
-float suavizado = 0.15;
-
-float pos = servoCenter;
-
-void setup() {
-  Serial.begin(9600);
-
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
-
-  servo.attach(servoPin);
-  servo.write(pos);
-  delay(300);
-}
-
-float getDistance() {
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-
-  long duration = pulseIn(echoPin, HIGH);
-  return duration * 0.034 / 2.0;
-}
-
-void loop() {
-
-  float dist = getDistance();
-  float targetAngle;
-
-  // ============================
-  //       LÓGICA SOLICITADA
-  // ============================
-
-  if (dist <= distMin) {
-    // Muy cerca → servo abajo (20°)
-    targetAngle = servoDown;
-  }
-  else if (dist > distMin && dist < deadMin) {
-    // Entre 3 cm y 8 cm → 20° → 75°
-    targetAngle = map(dist, distMin, deadMin, servoDown, servoCenter);
-  }
-  else if (dist >= deadMin && dist <= deadMax) {
-    // Deadzone → 75° fijo
-    targetAngle = servoCenter;
-  }
-  else {  
-    // dist > 9 → mapear 75° → 120°
-    targetAngle = map(dist, deadMax, distMax, servoCenter, servoUp);
-  }
-
-  // Límites seguros
-  targetAngle = constrain(targetAngle, servoDown, servoUp);
-
-  // Suavización
-  pos = pos + (targetAngle - pos) * suavizado;
-
-  servo.write(pos);
-
-  // DEBUG
   Serial.print("Distancia: ");
   Serial.print(dist);
   Serial.print(" cm | Angulo: ");
